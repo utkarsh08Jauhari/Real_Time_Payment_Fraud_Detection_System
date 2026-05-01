@@ -1,41 +1,31 @@
-from kafka import KafkaConsumer # type: ignore
 import json
-import joblib  # type: ignore
-import pandas as pd # type: ignore
-import redis # type: ignore
-
-r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+import joblib
+import pandas as pd
 
 model = joblib.load("model.joblib")
 
-consumer = KafkaConsumer(
-    "fraud_detection",
-    bootstrap_servers="localhost:9092",
-    value_deserializer=lambda m: json.loads(m.decode("utf-8"))
-)
+print("Dummy Consumer running...")
 
-print("Consumer running...")
+# Teansaction
+transaction = {
+    "step": 1,
+    "type": "PAYMENT",
+    "amount": 1000,
+    "oldbalanceOrg": 5000,
+    "newbalanceOrig": 4000,
+    "oldbalanceDest": 10000,
+    "newbalanceDest": 11000
+}
 
-for message in consumer:
+df = pd.DataFrame([transaction])
 
-    transaction = message.value
+prediction = model.predict(df)[0]
+prob = model.predict_proba(df)[0][1]
 
-    df = pd.DataFrame([transaction])
+result = {
+    "transaction": transaction,
+    "prediction": int(prediction),
+    "probability": float(prob)
+}
 
-    prediction = model.predict(df)[0]
-    prob = model.predict_proba(df)[0][1]
-
-    result = {
-        "transaction": transaction,
-        "prediction": int(prediction),
-        "probability": float(prob)
-    }
-    
-    r.lpush(f"fraud_results:{transaction['sender_id']}", json.dumps(result))
-
-    if prediction == 1:
-        print("🚨 FRAUD DETECTED")
-    else:
-        print("✅ Legitimate Transaction")
-
-    print("Stored in Redis:", result)
+print("Processed result:", result)
