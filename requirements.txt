@@ -9,4 +9,4 @@ redis
 matplotlib
 fastapi
 uvicorn
-gunicorn 
+gunicorn
