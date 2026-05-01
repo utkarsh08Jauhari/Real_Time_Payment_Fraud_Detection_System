@@ -1,0 +1,12 @@
+pyspark
+kafka-python
+pandas 
+scikit-learn 
+xgboost 
+joblib
+streamlit
+redis
+matplotlib
+fastapi
+uvicorn
+ 
